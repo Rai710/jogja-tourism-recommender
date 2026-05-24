@@ -71,6 +71,7 @@ Sistem menggunakan metode WP untuk perangkingan. Keunggulan metode ini adalah pe
 ## 📝 Kontributor
 
 * **Reinnent Rasika Z**
+* **Raihan Buono P**
 * *Praktikum Sistem Pendukung Keputusan (SCPK) - Semester 4*
 
 ---
