@@ -76,9 +76,3 @@ Sistem menggunakan metode WP untuk perangkingan. Keunggulan metode ini adalah pe
 
 ---
 
-### Tips Tambahan untuk Anda:
-
-1. **Visualisasi**: Jika Anda ingin menampilkan README ini di GitHub, Anda bisa menambahkan tangkapan layar (screenshot) dari aplikasi Anda tepat di bawah "Fitur Utama" agar orang yang melihat repo Anda langsung paham betapa kerennya UI-nya.
-2. **Dataset**: Jangan lupa untuk memastikankan folder `dataset` Anda tidak ikut ter-upload ke publik jika mengandung data pribadi, tapi untuk keperluan praktikum, struktur di atas sudah sangat aman.
-
-Apakah ada bagian yang ingin Anda tambahkan atau detail yang perlu dipertajam?
