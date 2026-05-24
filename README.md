@@ -1,5 +1,3 @@
-Tentu, ini adalah draf `README.md` yang profesional, terstruktur, dan informatif untuk proyek Anda. Saya menyusunnya dengan gaya dokumentasi teknis yang disukai dalam proyek akhir atau portofolio.
-
 ---
 
 # Jogja Tourism SPK: Sistem Rekomendasi Pariwisata
