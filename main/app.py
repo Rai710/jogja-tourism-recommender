@@ -3,6 +3,8 @@ import streamlit as st
 import pandas as pd
 import folium
 from streamlit_folium import st_folium
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 try:
     from main import (
@@ -75,20 +77,19 @@ def popup_detail_wisata(w_row):
 
 #SIDEBAR
 with st.sidebar:
-    st.title("Panel Kendali")
-    st.caption("Atur preferensi perjalanan Anda.")
-    st.divider()
-
-    st.caption("STATUS AKOMODASI")
+    st.header("Panel Kendali")
+    
     mode_pilih = st.radio(
         "mode",
-        ["Sudah punya hotel", "Belum punya hotel", "Belum ada rencana"],
+        ["Sudah punya hotel", "Belum punya hotel", "Belum ada rencana", "Data & Analitik"], # <-- PASTIKAN ADA 4 DI SINI
         key="active_mode",
         label_visibility="collapsed",
     )
+    
     MODE_A = mode_pilih == "Sudah punya hotel"
     MODE_B = mode_pilih == "Belum punya hotel"
     MODE_C = mode_pilih == "Belum ada rencana"
+    MODE_D = mode_pilih == "Data & Analitik"
     st.divider()
 
     # Default semua variabel
@@ -195,6 +196,8 @@ with st.sidebar:
             "JUMLAH KAMAR": 3, "GOLONGAN_SCORE": bh_bintang,
             "jarak_ke_wisata": 5, "estimasi_waktu_menit": 4,
         }
+    elif MODE_D:
+        st.info("👉 Silakan lihat halaman utama (sebelah kanan) untuk melihat data dan analitik.")
 
 
 # HEADER
@@ -211,11 +214,16 @@ with col_stat:
 st.divider()
 
 
-# ── TABS ──────────────────────────────────────────────────────────────────────
+# ── TABS
+
 if MODE_A:
     tab1, tab2, tab3 = st.tabs(["Rekomendasi Wisata", "Peta Lokasi", "Sensitivitas Bobot"])
-else:
-    tab1, tab2 = st.tabs(["Rekomendasi Hotel" if MODE_B else "Paket Liburan", "Peta Lokasi"])
+elif MODE_B:
+    tab1, tab2 = st.tabs(["Rekomendasi Hotel", "Peta Lokasi"])
+elif MODE_C:
+    tab1, tab2 = st.tabs(["Paket Liburan", "Peta Lokasi"])
+elif MODE_D:
+    tab_profil, tab_data, tab_grafik = st.tabs(["👥 Profil Kelompok", "📂 Dataset Mentah", "📈 Visualisasi Analitik"])
 
 
 
@@ -442,7 +450,7 @@ elif MODE_B:
 
 
 # MODE C
-else:
+elif MODE_C:      
     with tab1:
         st.subheader("Paket Liburan Jogja")
         st.caption("Sistem memilihkan destinasi terbaik sesuai gaya liburan, lengkap dengan opsi hotel terdekat.")
@@ -509,3 +517,54 @@ else:
                 st_folium(m, width=None, height=500, returned_objects=[])
         else:
             st.info("Hasilkan paket terlebih dahulu, lalu tekan tombol untuk melihat peta.")
+
+elif MODE_D:
+    # --- TAB 1: PROFIL KELOMPOK ---
+    with tab_profil:
+        with st.container(border=True):
+            st.subheader("Tim Pengembang SPK")
+            st.write("Aplikasi Sistem Pendukung Keputusan (Metode Weighted Product) ini dikembangkan oleh:")
+            st.markdown("- **Raihan Buono Putra**")
+            st.markdown("- **Reinnent Rasika Z**")
+            st.caption("Praktikum Sistem Pendukung Keputusan (SCPK) - 2026")
+            
+    # --- TAB 2: DATASET MENTAH ---
+    with tab_data:
+        st.subheader("Dataset Pariwisata (Cleaned)")
+        st.dataframe(df_wisata_final, use_container_width=True, height=350)
+        
+        st.subheader("Dataset Hotel (Cleaned)")
+        st.dataframe(df_hotel, use_container_width=True, height=350)
+        
+    # --- TAB 3: VISUALISASI 3 GRAFIK (SYARAT WAJIB) ---
+    with tab_grafik:
+        st.info("Visualisasi Exploratory Data Analysis (EDA) menggunakan Seaborn dan Matplotlib.")
+        c1, c2 = st.columns(2)
+        
+        # Grafik 1: Bar Chart (Distribusi Kategori Wisata)
+        with c1:
+            st.write("**1. Distribusi Kategori Wisata di Yogyakarta**")
+            fig1, ax1 = plt.subplots(figsize=(6, 4))
+            sns.countplot(data=df_wisata_final, y='type', order=df_wisata_final['type'].value_counts().index, palette='viridis', ax=ax1)
+            ax1.set_xlabel("Jumlah Destinasi")
+            ax1.set_ylabel("Kategori")
+            st.pyplot(fig1)
+            
+        # Grafik 2: Pie Chart (Komposisi Kelas Hotel)
+        with c2:
+            st.write("**2. Komposisi Ketersediaan Kelas Hotel**")
+            fig2, ax2 = plt.subplots(figsize=(6, 4))
+            hotel_counts = df_hotel['GOLONGAN'].value_counts().head(5)
+            ax2.pie(hotel_counts, labels=hotel_counts.index, autopct='%1.1f%%', colors=sns.color_palette('pastel'))
+            st.pyplot(fig2)
+            
+        st.divider()
+        
+        # Grafik 3: Scatter Plot (Korelasi Harga & Rating)
+        st.write("**3. Pemetaan Harga Tiket (Weekday) vs Rating Wisata**")
+        fig3, ax3 = plt.subplots(figsize=(10, 4))
+        sns.scatterplot(data=df_wisata_final, x='htm_weekday', y='vote_average', hue='type', palette='Set2', alpha=0.8, ax=ax3)
+        ax3.set_xlabel("Harga Tiket (Rp)")
+        ax3.set_ylabel("Rating (⭐)")
+        ax3.legend(title='Kategori', bbox_to_anchor=(1.05, 1), loc='upper left')
+        st.pyplot(fig3)
