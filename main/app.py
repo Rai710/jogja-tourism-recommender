@@ -116,7 +116,21 @@ with st.sidebar:
         st.divider()
         st.caption("FILTER WISATA")
         kat_pilih    = st.selectbox("Kategori", ["Semua"] + df_wisata_final["type"].dropna().unique().tolist())
-        budget_maks  = st.number_input("Budget tiket maks (Rp)", min_value=0, value=100000, step=5000)
+        
+        # --- SAMAKAN DENGAN MODE C ---
+        gaya_a = st.selectbox(
+            "Budget wisata",
+            ["Hemat  (< Rp 10.000)", "Menengah  (Rp 10–50 ribu)", "Eksklusif  (> Rp 50.000)"],
+            key="gaya_a" # Key ditambah agar tidak bentrok dengan Mode C
+        )
+        if gaya_a.startswith("Hemat"):
+            budget_min, budget_maks = -1, 10000
+        elif gaya_a.startswith("Menengah"):
+            budget_min, budget_maks = 10000, 50000
+        else:
+            budget_min, budget_maks = 50000, 1_000_000
+        # -----------------------------
+        
         keyword_pilih= st.text_input("Kata kunci", placeholder="Contoh: Candi, Pantai")
 
         st.divider()
@@ -242,7 +256,11 @@ if MODE_A:
                 hasil_mentah = rekomendasi_wisata_dari_hotel(
                     hotel_pilih, bobot_user, budget_maks, kat_pilih, keyword_pilih, "descending", hari_pilih
                 )
-                hasil = hasil_mentah[hasil_mentah["jarak_ke_hotel"] <= radius_input]
+                hasil = hasil_mentah[
+                    (hasil_mentah["jarak_ke_hotel"] <= radius_input) & 
+                    (hasil_mentah["harga_tiket"] >= budget_min) &
+                    (hasil_mentah["harga_tiket"] <= budget_maks)
+                ]
 
             if hasil.empty:
                 st.warning(f"Tidak ada destinasi dalam radius {radius_input} km dengan budget yang dipilih.")
@@ -296,7 +314,7 @@ if MODE_A:
         if hotel_pilih and st.button("Tampilkan Peta", type="primary"):
             with st.spinner("Memuat peta…"):
                 h_data = df_hotel[df_hotel["NAMA PENGINAPAN"] == hotel_pilih].iloc[0]
-                m = folium.Map(location=[h_data["Latitude"], h_data["Longitude"]], zoom_start=13)
+                m = folium.Map(location=[h_data ["Latitude"], h_data["Longitude"]], zoom_start=13)
                 folium.Marker(
                     [h_data["Latitude"], h_data["Longitude"]],
                     popup=hotel_pilih, tooltip="Hotel Anda",
@@ -528,7 +546,7 @@ elif MODE_D:
             st.markdown("- **Reinnent Rasika Z**")
             st.caption("Praktikum Sistem Pendukung Keputusan (SCPK) - 2026")
             
-    # --- TAB 2: DATASET MENTAH ---
+    # TAB 2: DATASET MENTAH
     with tab_data:
         st.subheader("1. Dataset Wisata Gabungan (Fitur SPK)")
         st.caption("Gabungan data dasar wisata dengan ekstraksi fitur geospasial.")
